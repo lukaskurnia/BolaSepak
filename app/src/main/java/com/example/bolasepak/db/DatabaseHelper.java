@@ -81,7 +81,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public DataHome getDataHome(String datahome_type) {
         SQLiteDatabase db = this.getReadableDatabase();
         String selectQuery = "SELECT * FROM " + TABLE_DATAHOME + " WHERE "
-                + KEY_DATAHOME_TYPE + " = " + datahome_type;
+                + KEY_DATAHOME_TYPE + " = " + "'" + datahome_type +"'";
 
         Log.e(LOG, selectQuery);
 
