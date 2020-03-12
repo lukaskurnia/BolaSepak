@@ -17,6 +17,8 @@ import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.bolasepak.api.ApiRepository;
+import com.example.bolasepak.db.DatabaseHelper;
+import com.example.bolasepak.db.model.DataHome;
 
 import android.util.Log;
 import android.widget.TextView;
@@ -43,10 +45,40 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 
     TextView TvSteps;
 
+    //for Database use
+    DatabaseHelper db;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        db = new DatabaseHelper(getApplicationContext());
+        db.recreateDataHome();
+//        db.onUpgrade();
+//        db.onUpgrade(db,0,0);
+
+//        DataHome dh1 = new DataHome("ini ke1");
+//        DataHome dh2 = new DataHome("ini ke2");
+//        DataHome dh3 = new DataHome("ini ke3");
+//        DataHome dh4 = new DataHome("ini XX");
+//        dh4.setId(3);
+
+//        Log.d("ini Data Home", "dh ke " + dh3.getData());
+
+//        long dh1_id = db.createDataHome(dh1);
+//        long dh2_id = db.createDataHome(dh2);
+//        long dh3_id = db.createDataHome(dh3);
+
+//        Log.e("Data Home Count ", "jumlah " + db.getDataHomeCount());
+//        Log.e("wakgeng  ", "jumlah " + db.getDataHome(3).getData());
+//        db.updateDataHome(dh4);
+//        Log.e("wakgeng  ", "jumlah " + db.getDataHome(3).getData());
+
+
+
+
+        db.closeDB();
 
         recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setHasFixedSize(true);
@@ -79,6 +111,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
+                            Log.e("wak1", response.toString());
+                            //Saving to Database
+                            DataHome data = new DataHome(response.toString(),"detail");
+                            db.createDataHome(data);
                             JSONArray jsonArray = response.getJSONArray("events");
                             System.out.println(jsonArray.length());
 
@@ -133,6 +169,10 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                     @Override
                     public void onResponse(JSONObject response) {
                         try {
+                            Log.e("wak2", response.toString());
+                            //insert to database
+                            DataHome data = new DataHome(response.toString(),"pic");
+                            db.createDataHome(data);
                             JSONArray jsonArray = response.getJSONArray("teams");
                             System.out.println(jsonArray.get(0));
                             System.out.println(jsonArray.get(1));
