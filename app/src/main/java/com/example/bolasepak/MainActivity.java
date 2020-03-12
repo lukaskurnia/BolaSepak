@@ -4,6 +4,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 
 import com.android.volley.Request;
@@ -15,6 +19,7 @@ import com.android.volley.toolbox.Volley;
 import com.example.bolasepak.api.ApiRepository;
 
 import android.util.Log;
+import android.widget.TextView;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,12 +28,20 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements SensorEventListener, StepListener{
     private RecyclerView recyclerView;
     private MatchAdapter matchAdapter;
     private HashMap<String, String> teamHash;
     private ArrayList<MatchItem> matchList;
     private RequestQueue requestQueue;
+    private TextView textView;
+    private StepDetector simpleStepDetector;
+    private SensorManager sensorManager;
+    private Sensor accel;
+    private static final String TEXT_NUM_STEPS = " steps";
+    private int numSteps;
+
+    TextView TvSteps;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,6 +55,19 @@ public class MainActivity extends AppCompatActivity {
         requestQueue = Volley.newRequestQueue(this);
         teamHash = new HashMap<String, String>();
         parseJSONTeam();
+
+//        SuperManager instance
+        sensorManager = (SensorManager) getSystemService(SENSOR_SERVICE);
+        accel = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER);
+        simpleStepDetector = new StepDetector();
+        simpleStepDetector.registerListener((StepListener) this);
+
+        TvSteps = (TextView) findViewById(R.id.textView);
+//        Button BtnStart = (Button) findViewById(R.id.btn_start);
+//        Button BtnStop = (Button) findViewById(R.id.btn_stop);
+
+        numSteps = 0;
+        sensorManager.registerListener((SensorEventListener) MainActivity.this, accel, SensorManager.SENSOR_DELAY_FASTEST);
 
     }
 
@@ -141,5 +167,24 @@ public class MainActivity extends AppCompatActivity {
         });
 
         requestQueue.add(request);
+    }
+
+//    StepCounter
+//    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+    }
+
+//    @Override
+    public void onSensorChanged(SensorEvent event) {
+        if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+            simpleStepDetector.updateAccel(
+                    event.timestamp, event.values[0], event.values[1], event.values[2]);
+        }
+    }
+
+//    @Override
+    public void step(long timeNs) {
+        numSteps++;
+        TvSteps.setText(numSteps + TEXT_NUM_STEPS);
     }
 }

@@ -23,7 +23,7 @@
         android:layout_height="21dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        android:text="4000 steps today"
+        android:text="shake me"
         android:textSize="14sp"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
