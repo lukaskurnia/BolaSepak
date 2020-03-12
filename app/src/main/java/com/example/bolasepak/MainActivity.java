@@ -34,15 +34,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ApiRepository repo = new ApiRepository();
-        //String str = repo.doRequest("https://www.thesportsdb.com/api/v1/json/1/eventsnextleague.php?id=4328");
-        repo.execute("https://www.thesportsdb.com/api/v1/json/1/eventsnextleague.php?id=4328");
 
         recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setHasFixedSize(true);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         matchList = new ArrayList<>();
         requestQueue = Volley.newRequestQueue(this);
+        teamHash = new HashMap<String, String>();
         parseJSONTeam();
 
     }
@@ -56,6 +54,7 @@ public class MainActivity extends AppCompatActivity {
                     public void onResponse(JSONObject response) {
                         try {
                             JSONArray jsonArray = response.getJSONArray("events");
+                            System.out.println(jsonArray.length());
 
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject hit = jsonArray.getJSONObject(i);
@@ -67,9 +66,17 @@ public class MainActivity extends AppCompatActivity {
                                 String homeTeam = hit.getString("strHomeTeam");
                                 String awayTeam = hit.getString("strAwayTeam");
                                 String homeScore = hit.getString("intHomeScore");
+                                if(homeScore.equals("null")) {
+                                    homeScore = "-";
+                                }
                                 String awayScore = hit.getString("intAwayScore");
+                                if(awayScore.equals("null")) {
+                                    awayScore = "-";
+                                }
                                 String homeImage = teamHash.get(idHome);
                                 String awayImage = teamHash.get(idAway);
+
+                                Log.i("match", "succeded");
 
                                 matchList.add(new MatchItem(idMatch, idHome, idAway, date, homeTeam, awayTeam, homeScore, awayScore, homeImage, awayImage));
                             }
@@ -79,6 +86,7 @@ public class MainActivity extends AppCompatActivity {
 
                         } catch (JSONException e) {
                             e.printStackTrace();
+                            Log.i("match", "failed");
                         }
                     }
                 }, new Response.ErrorListener() {
@@ -92,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void parseJSONTeam() {
-        String url = "https://www.thesportsdb.com/api/v1/json/1/lookupteam.php?id=133604";
+        String url = "https://www.thesportsdb.com/api/v1/json/1/search_all_teams.php?l=English%20Premier%20League";
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
                 new Response.Listener<JSONObject>() {
@@ -100,19 +108,28 @@ public class MainActivity extends AppCompatActivity {
                     public void onResponse(JSONObject response) {
                         try {
                             JSONArray jsonArray = response.getJSONArray("teams");
+                            System.out.println(jsonArray.get(0));
+                            System.out.println(jsonArray.get(1));
 
                             for (int i = 0; i < jsonArray.length(); i++) {
                                 JSONObject hit = jsonArray.getJSONObject(i);
 
                                 String idTeam = hit.getString("idTeam");
                                 String badgeTeam = hit.getString("strTeamBadge");
+                                Log.i("Team", idTeam);
+                                Log.i("Team", badgeTeam);
+//                                System.out.println(idTeam);
+//                                System.out.println(badgeTeam);
 
                                 teamHash.put(idTeam, badgeTeam);
                             }
+                            int size = teamHash.size();
+                            System.out.println(size);
                             parseJSONMatch();
 
                         } catch (JSONException e) {
                             e.printStackTrace();
+                            Log.i("Team", "failed");
                         }
                     }
                 }, new Response.ErrorListener() {

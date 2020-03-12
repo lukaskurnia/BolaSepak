@@ -34,10 +34,6 @@ public class MatchAdapter extends RecyclerView.Adapter <MatchAdapter.MatchViewHo
     public void onBindViewHolder(MatchViewHolder holder, int position) {
         MatchItem currentItem = this.MatchList.get(position);
 
-//        String imageUrl = currentItem.getImageUrl();
-//        String creatorName = currentItem.getCreator();
-//        int likeCount = currentItem.getLikeCount();
-
         String idMatch = currentItem.getIdMatch();
         String idHome = currentItem.getIdHome();
         String idAway = currentItem.getIdAway();
@@ -54,11 +50,9 @@ public class MatchAdapter extends RecyclerView.Adapter <MatchAdapter.MatchViewHo
         holder.textAway.setText(awayTeam);
         holder.scoreHome.setText(homeScore);
         holder.scoreAway.setText(awayScore);
-//        holder.imageHome.setText(homeImage);
-//        holder.imageHome.setText(homeImage);
         holder.vs.setText("VS");
-        Picasso.with(context).load(homeImage).fit().centerInside().into(holder.imageHome);
-        Picasso.with(context).load(awayImage).fit().centerInside().into(holder.imageAway);
+        Picasso.get().load(homeImage).fit().centerInside().into(holder.imageHome);
+        Picasso.get().load(awayImage).fit().centerInside().into(holder.imageAway);
     }
 
     @Override
