@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 
 import com.example.bolasepak.db.model.DataHome;
 import com.example.bolasepak.db.model.DataMatch;
+import com.example.bolasepak.db.model.DataTeam;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
@@ -21,12 +22,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static final String TABLE_DATAHOME = "data_home";
     private static final String TABLE_DATAMATCH = "data_match";
+    private static final String TABLE_DATATEAM = "data_team";
 
     private static final String KEY_DATAHOME_DATA = "data";
     private static final String KEY_DATAHOME_TYPE = "type";
 
     private static final String KEY_DATAMATCH_DATA = "data";
     private static final String KEY_DATAMATCH_MATCHID = "match_id";
+
+    private static final String KEY_DATATEAM_DATA = "data";
+    private static final String KEY_DATATEAM_TYPE = "type";;
+    private static final String KEY_DATATEAM_TEAMID = "team_id";
+    private static final String KEY_DATATEAM_STATUS = "status";
 
     private static final String KEY_ID = "id";
 
@@ -38,6 +45,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             "CREATE TABLE IF NOT EXISTS " + TABLE_DATAMATCH + " (" + KEY_ID + " INTEGER PRIMARY KEY," +
                     KEY_DATAMATCH_MATCHID + " TEXT NOT NULL, " +KEY_DATAMATCH_DATA + " TEXT NOT NULL" + ")";
 
+    private static final String CREATE_TABLE_DATATEAM =
+            "CREATE TABLE IF NOT EXISTS " + TABLE_DATATEAM + " (" + KEY_ID + " INTEGER PRIMARY KEY," +
+                    KEY_DATATEAM_STATUS + " TEXT NOT NULL, " +
+                    KEY_DATATEAM_TEAMID + " TEXT NOT NULL, " +KEY_DATATEAM_TYPE + " TEXT NOT NULL, " +
+                    KEY_DATATEAM_DATA+ " TEXT NOT NULL" + ")";
 
     /***
      * All utility
@@ -51,12 +63,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_TABLE_DATAHOME);
         db.execSQL(CREATE_TABLE_DATAMATCH);
+        db.execSQL(CREATE_TABLE_DATATEAM);
     }
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_DATAHOME);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_DATAMATCH);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_DATATEAM);
 
         onCreate(db);
     }
@@ -65,6 +79,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         SQLiteDatabase db = this.getWritableDatabase();
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_DATAHOME);
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_DATAMATCH);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_DATATEAM);
 
         onCreate(db);
     }
@@ -185,6 +200,55 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             dh.setId(c.getInt(c.getColumnIndex(KEY_ID)));
             dh.setData(c.getString(c.getColumnIndex(KEY_DATAMATCH_DATA)));
             dh.setMatchId(c.getString(c.getColumnIndex(KEY_DATAMATCH_MATCHID)));
+
+            return dh;
+        } catch (Exception e){
+            return null;
+        }
+    }
+
+    /***
+     * Bagian Database DATATEAM
+     */
+
+
+    //create or insert
+    public long createDataTeam(DataTeam dataTeam) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(KEY_DATATEAM_DATA, dataTeam.getData());
+        values.put(KEY_DATATEAM_TYPE, dataTeam.getType());
+        values.put(KEY_DATATEAM_TEAMID, dataTeam.getTeamId());
+        values.put(KEY_DATATEAM_STATUS, dataTeam.getStatus());
+
+        long dataTeam_id = db.insert(TABLE_DATATEAM, null, values);
+
+        return dataTeam_id;
+    }
+
+    //read or select
+    public DataTeam getDataTeam(String datateam_idteam, String datateam_type, String datateam_status) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String selectQuery = "SELECT * FROM " + TABLE_DATATEAM + " WHERE "
+                + KEY_DATATEAM_TEAMID + " = " + "'" + datateam_idteam +"'"
+                + " AND "  + KEY_DATATEAM_TYPE + " = " + "'" + datateam_type +"'"
+                + " AND "  + KEY_DATATEAM_STATUS + " = " + "'" + datateam_status +"'";
+
+        Log.e(LOG, selectQuery);
+
+        Cursor c = db.rawQuery(selectQuery,null);
+
+        if(c != null) {
+            c.moveToFirst();
+        }
+        try{
+            DataTeam dh = new DataTeam();
+            dh.setId(c.getInt(c.getColumnIndex(KEY_ID)));
+            dh.setData(c.getString(c.getColumnIndex(KEY_DATATEAM_DATA)));
+            dh.setTeamId(c.getString(c.getColumnIndex(KEY_DATATEAM_TEAMID)));
+            dh.setType(c.getString(c.getColumnIndex(KEY_DATATEAM_TYPE)));
+            dh.setStatus(c.getString(c.getColumnIndex(KEY_DATATEAM_STATUS)));
 
             return dh;
         } catch (Exception e){

@@ -1,7 +1,11 @@
 package com.example.bolasepak;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.provider.ContactsContract;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +22,9 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.bolasepak.db.DatabaseHelper;
+import com.example.bolasepak.db.model.DataHome;
+import com.example.bolasepak.db.model.DataTeam;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -49,16 +56,22 @@ public class FragmentNextMatch extends Fragment implements MatchAdapter.OnItemCl
     private RequestQueue requestQueue;
 
     private String idTeam;
+    private boolean status;
+
+    DatabaseHelper db;
 
     View v;
 
-    public FragmentNextMatch(String idTeam){
+    public FragmentNextMatch(String idTeam, boolean status){
         this.idTeam = idTeam;
+        this.status = status;
     }
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState){
+
+        db = new DatabaseHelper(getActivity().getApplicationContext());
         v = inflater.inflate(R.layout.fragment_next_match, container, false);
         recyclerView = v.findViewById(R.id.recycler_view_next_match);
         recyclerView.setHasFixedSize(true);
@@ -68,108 +81,187 @@ public class FragmentNextMatch extends Fragment implements MatchAdapter.OnItemCl
         teamHash = new HashMap<String, String>();
         parseJSONTeam();
 
+        db.closeDB();
+
         return v;
     }
     private void parseJSONMatch() {
         String url = "https://www.thesportsdb.com/api/v1/json/1/eventsnext.php?id=" + idTeam;
 
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            JSONArray jsonArray = response.getJSONArray("events");
-                            System.out.println(jsonArray.length());
+        if(status) {
+            JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            try {
+                                DataTeam data = new DataTeam(response.toString(),idTeam,"detail", "next");
+                                db.createDataTeam(data);
+                                JSONArray jsonArray = response.getJSONArray("events");
+                                System.out.println(jsonArray.length());
 
-                            for (int i = 0; i < jsonArray.length(); i++) {
-                                JSONObject hit = jsonArray.getJSONObject(i);
+                                for (int i = 0; i < jsonArray.length(); i++) {
+                                    JSONObject hit = jsonArray.getJSONObject(i);
 
-                                String idMatch = hit.getString("idEvent");
-                                String idHome = hit.getString("idHomeTeam");
-                                String idAway = hit.getString("idAwayTeam");
-                                String date = hit.getString("dateEvent");
-                                String homeTeam = hit.getString("strHomeTeam");
-                                String awayTeam = hit.getString("strAwayTeam");
-                                String homeScore = hit.getString("intHomeScore");
-                                if(homeScore.equals("null")) {
-                                    homeScore = "-";
+                                    String idMatch = hit.getString("idEvent");
+                                    String idHome = hit.getString("idHomeTeam");
+                                    String idAway = hit.getString("idAwayTeam");
+                                    String date = hit.getString("dateEvent");
+                                    String homeTeam = hit.getString("strHomeTeam");
+                                    String awayTeam = hit.getString("strAwayTeam");
+                                    String homeScore = hit.getString("intHomeScore");
+                                    if (homeScore.equals("null")) {
+                                        homeScore = "-";
+                                    }
+                                    String awayScore = hit.getString("intAwayScore");
+                                    if (awayScore.equals("null")) {
+                                        awayScore = "-";
+                                    }
+                                    String homeImage = teamHash.get(idHome);
+                                    String awayImage = teamHash.get(idAway);
+
+                                    Log.i("match", "succeded");
+
+                                    matchList.add(new MatchItem(idMatch, idHome, idAway, date, homeTeam, awayTeam, homeScore, awayScore, homeImage, awayImage));
                                 }
-                                String awayScore = hit.getString("intAwayScore");
-                                if(awayScore.equals("null")) {
-                                    awayScore = "-";
-                                }
-                                String homeImage = teamHash.get(idHome);
-                                String awayImage = teamHash.get(idAway);
 
-                                Log.i("match", "succeded");
+                                matchAdapter = new MatchAdapter(getActivity().getApplicationContext(), matchList);
+                                recyclerView.setAdapter(matchAdapter);
+                                matchAdapter.setOnItemClickListener(FragmentNextMatch.this);
 
-                                matchList.add(new MatchItem(idMatch, idHome, idAway, date, homeTeam, awayTeam, homeScore, awayScore, homeImage, awayImage));
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                                Log.i("match", "failed");
                             }
-
-                            matchAdapter = new MatchAdapter(getActivity().getApplicationContext(), matchList);
-                            recyclerView.setAdapter(matchAdapter);
-                            matchAdapter.setOnItemClickListener(FragmentNextMatch.this);
-
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            Log.i("match", "failed");
                         }
-                    }
-                }, new Response.ErrorListener() {
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                error.printStackTrace();
-            }
-        });
+                    }, new Response.ErrorListener() {
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    error.printStackTrace();
+                }
+            });
 
-        requestQueue.add(request);
+            requestQueue.add(request);
+        }
+        else {
+            try {
+                DataTeam data = db.getDataTeam(idTeam, "detail", "next");
+                if(data!= null) {
+                    JSONObject jsonObject = new JSONObject(data.getData());
+                    JSONArray jsonArray = jsonObject.getJSONArray("events");
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        JSONObject hit = jsonArray.getJSONObject(i);
+
+                        String idMatch = hit.getString("idEvent");
+                        String idHome = hit.getString("idHomeTeam");
+                        String idAway = hit.getString("idAwayTeam");
+                        String date = hit.getString("dateEvent");
+                        String homeTeam = hit.getString("strHomeTeam");
+                        String awayTeam = hit.getString("strAwayTeam");
+                        String homeScore = hit.getString("intHomeScore");
+                        if (homeScore.equals("null")) {
+                            homeScore = "-";
+                        }
+                        String awayScore = hit.getString("intAwayScore");
+                        if (awayScore.equals("null")) {
+                            awayScore = "-";
+                        }
+                        String homeImage = teamHash.get(idHome);
+                        String awayImage = teamHash.get(idAway);
+
+                        Log.i("match", "succeded");
+
+                        matchList.add(new MatchItem(idMatch, idHome, idAway, date, homeTeam, awayTeam, homeScore, awayScore, homeImage, awayImage));
+                    }
+
+                    matchAdapter = new MatchAdapter(getActivity().getApplicationContext(), matchList);
+                    recyclerView.setAdapter(matchAdapter);
+                    matchAdapter.setOnItemClickListener(FragmentNextMatch.this);
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+        }
     }
 
     private void parseJSONTeam() {
         String url = "https://www.thesportsdb.com/api/v1/json/1/search_all_teams.php?l=English%20Premier%20League";
 
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
+        if(status) {
+            JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
 //                        String resp = response.toString();
 //                        System.out.println(resp);
 //                        System.out.println(JsonObject.stringify(response));
-                        try {
-                            JSONArray jsonArray = response.getJSONArray("teams");
-                            System.out.println(jsonArray.get(0));
-                            System.out.println(jsonArray.get(1));
+                            try {
+                                DataTeam data = new DataTeam(response.toString(), idTeam, "pic", "next");
+                                db.createDataTeam(data);
+                                JSONArray jsonArray = response.getJSONArray("teams");
+                                System.out.println(jsonArray.get(0));
+                                System.out.println(jsonArray.get(1));
 
-                            for (int i = 0; i < jsonArray.length(); i++) {
-                                JSONObject hit = jsonArray.getJSONObject(i);
+                                for (int i = 0; i < jsonArray.length(); i++) {
+                                    JSONObject hit = jsonArray.getJSONObject(i);
 
-                                String idTeam = hit.getString("idTeam");
-                                String badgeTeam = hit.getString("strTeamBadge");
-                                Log.i("Team", idTeam);
-                                Log.i("Team", badgeTeam);
+                                    String idTeam = hit.getString("idTeam");
+                                    String badgeTeam = hit.getString("strTeamBadge");
+                                    Log.i("Team", idTeam);
+                                    Log.i("Team", badgeTeam);
 //                                System.out.println(idTeam);
 //                                System.out.println(badgeTeam);
 
-                                teamHash.put(idTeam, badgeTeam);
+                                    teamHash.put(idTeam, badgeTeam);
+                                }
+                                int size = teamHash.size();
+                                System.out.println(size);
+                                parseJSONMatch();
+
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                                Log.i("Team", "failed");
                             }
-                            int size = teamHash.size();
-                            System.out.println(size);
-                            parseJSONMatch();
-
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            Log.i("Team", "failed");
                         }
+                    }, new Response.ErrorListener() {
+
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    error.printStackTrace();
+                }
+            });
+
+            requestQueue.add(request);
+        }
+        else {
+            try{
+                DataTeam data = db.getDataTeam(idTeam, "pic", "next");
+                if(data != null) {
+                    JSONObject jsonobject = new JSONObject(data.getData());
+                    JSONArray jsonArray = jsonobject.getJSONArray("teams");
+                    System.out.println(jsonArray.get(0));
+                    System.out.println(jsonArray.get(1));
+
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        JSONObject hit = jsonArray.getJSONObject(i);
+
+                        String idTeam = hit.getString("idTeam");
+                        String badgeTeam = hit.getString("strTeamBadge");
+                        Log.i("Team", idTeam);
+                        Log.i("Team", badgeTeam);
+//                                System.out.println(idTeam);
+//                                System.out.println(badgeTeam);
+
+                        teamHash.put(idTeam, badgeTeam);
                     }
-                }, new Response.ErrorListener() {
-
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                error.printStackTrace();
+                    int size = teamHash.size();
+                    System.out.println(size);
+                    parseJSONMatch();
+                }
+            } catch (JSONException e) {
+                e.printStackTrace();
             }
-        });
-
-        requestQueue.add(request);
+        }
     }
 
     @Override
@@ -190,6 +282,7 @@ public class FragmentNextMatch extends Fragment implements MatchAdapter.OnItemCl
 
         startActivity(detailIntent);
     }
+
 
 //    @Override
 //    public void onCreate(Bundle savedInstanceState){
