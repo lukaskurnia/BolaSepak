@@ -22,7 +22,6 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.google.gson.JsonObject;
 
-import com.example.bolasepak.api.ApiRepository;
 import com.example.bolasepak.db.DatabaseHelper;
 import com.example.bolasepak.db.model.DataHome;
 
@@ -36,7 +35,8 @@ import org.json.JSONObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-public class MainActivity extends AppCompatActivity implements MatchAdapter.OnItemClickListener {
+public class MainActivity extends AppCompatActivity implements SensorEventListener, StepListener, MatchAdapter.OnItemClickListener{
+
     public static final String EXTRA_ID_MATCH = "idMatch";
     public static final String EXTRA_ID_HOME = "idHome";
     public static final String EXTRA_ID_AWAY = "idAway";
@@ -47,8 +47,6 @@ public class MainActivity extends AppCompatActivity implements MatchAdapter.OnIt
     public static final String EXTRA_AWAY_SCORE = "awayScore";
     public static final String EXTRA_HOME_IMAGE = "homeImage";
     public static final String EXTRA_AWAY_IMAGE = "awayImage";
-
-public class MainActivity extends AppCompatActivity implements SensorEventListener, StepListener{
     private RecyclerView recyclerView;
     private MatchAdapter matchAdapter;
     private HashMap<String, String> teamHash;
@@ -77,30 +75,6 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         if(isConnected()){
             db.recreateDataHome();
         }
-//        db.onUpgrade();
-//        db.onUpgrade(db,0,0);
-
-//        DataHome dh1 = new DataHome("ini ke1","a");
-//        DataHome dh2 = new DataHome("ini ke2","a");
-//        DataHome dh3 = new DataHome("ini ke3","a");
-//        DataHome dh4 = new DataHome("ini XX","a");
-//        dh4.setId(3);
-
-//        Log.d("ini Data Home", "dh ke " + dh3.getData());
-
-//        long dh1_id = db.createDataHome(dh1);
-//        long dh2_id = db.createDataHome(dh2);
-//        long dh3_id = db.createDataHome(dh3);
-
-//        Log.e("Data Home Count ", "jumlah " + db.getDataHomeCount());
-//        Log.e("wakgeng  ", "jumlah " + db.getDataHome(3).getData());
-//        db.updateDataHome(dh4);
-//        Log.e("wakgeng  ", "jumlah " + db.getDataHome(3).getData());
-
-
-
-
-
 
         recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setHasFixedSize(true);
@@ -183,6 +157,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 }
             });
             requestQueue.add(request);
+        }
         else {
             try {
                 DataHome data = db.getDataHome("detail");
@@ -191,6 +166,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
                 System.out.println(jsonArray.length());
 
                 for (int i = 0; i < jsonArray.length(); i++) {
+                    JSONObject hit = jsonArray.getJSONObject(i);
 
                     String idMatch = hit.getString("idEvent");
                     String idHome = hit.getString("idHomeTeam");
@@ -223,6 +199,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             }
         }
     }
+    
 
     private void parseJSONTeam() {
         String url = "https://www.thesportsdb.com/api/v1/json/1/search_all_teams.php?l=English%20Premier%20League";
