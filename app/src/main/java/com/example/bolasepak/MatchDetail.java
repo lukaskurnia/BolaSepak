@@ -2,8 +2,11 @@ package com.example.bolasepak;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.media.Image;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -16,6 +19,9 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.bolasepak.db.DatabaseHelper;
+import com.example.bolasepak.db.model.DataHome;
+import com.example.bolasepak.db.model.DataMatch;
 import com.squareup.picasso.Picasso;
 
 import org.json.JSONArray;
@@ -56,11 +62,16 @@ public class MatchDetail extends AppCompatActivity {
     private String awayImage;
 
 //    private OnItemClickListener dListener;
+    DatabaseHelper db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_match_detail);
+
+        db = new DatabaseHelper(getApplicationContext());
+
+
         requestQueue = Volley.newRequestQueue(this);
         homeGoalsList = new String[20];
         awayGoalsList = new String[20];
@@ -96,76 +107,139 @@ public class MatchDetail extends AppCompatActivity {
 
         parseJSONMatchDetail(idMatch);
 
+        db.closeDB();
     }
 
-    private void parseJSONMatchDetail(String idMatch) {
+    private void parseJSONMatchDetail(final String idMatch) {
         String url = "https://www.thesportsdb.com/api/v1/json/1/lookupevent.php?id=" + idMatch;
 
-        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
-                new Response.Listener<JSONObject>() {
-                    @Override
-                    public void onResponse(JSONObject response) {
-                        try {
-                            JSONArray jsonArray = response.getJSONArray("events");
+        if(isConnected()) {
+            JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
+                    new Response.Listener<JSONObject>() {
+                        @Override
+                        public void onResponse(JSONObject response) {
+                            try {
+                                DataMatch data = new DataMatch(response.toString(), idMatch);
+                                db.createDataMatch(data);
+                                JSONArray jsonArray = response.getJSONArray("events");
 //                            System.out.println(jsonArray.get(0));
 //                            System.out.println(jsonArray.get(1));
 
-                            for (int i = 0; i < jsonArray.length(); i++) {
-                                JSONObject hit = jsonArray.getJSONObject(i);
+                                for (int i = 0; i < jsonArray.length(); i++) {
+                                    JSONObject hit = jsonArray.getJSONObject(i);
 
-                                homeShots = hit.getString("intHomeShots");
-                                if (homeShots.equals("null")){
-                                    homeShots = "-";
-                                }
-                                awayShots = hit.getString("intAwayShots");
-                                if (awayShots.equals("null")){
-                                    awayShots = "-";
-                                }
-                                String homeGoalsRaw = hit.getString("strHomeGoalDetails");
-                                String homeGoalsRep = homeGoalsRaw.replace(":", " ");
-                                homeGoalsList = homeGoalsRep.split(";");
-                                String awayGoalsRaw = hit.getString("strAwayGoalDetails");
-                                String awayGoalsRep = awayGoalsRaw.replace(":", " ");
-                                awayGoalsList = awayGoalsRep.split(";");
-                                Log.i("Team", homeGoalsRep);
-                                Log.i("Team", homeGoalsList[0]);
+                                    homeShots = hit.getString("intHomeShots");
+                                    if (homeShots.equals("null")) {
+                                        homeShots = "-";
+                                    }
+                                    awayShots = hit.getString("intAwayShots");
+                                    if (awayShots.equals("null")) {
+                                        awayShots = "-";
+                                    }
+                                    String homeGoalsRaw = hit.getString("strHomeGoalDetails");
+                                    String homeGoalsRep = homeGoalsRaw.replace(":", " ");
+                                    homeGoalsList = homeGoalsRep.split(";");
+                                    String awayGoalsRaw = hit.getString("strAwayGoalDetails");
+                                    String awayGoalsRep = awayGoalsRaw.replace(":", " ");
+                                    awayGoalsList = awayGoalsRep.split(";");
+                                    Log.i("Team", homeGoalsRep);
+                                    Log.i("Team", homeGoalsList[0]);
 //                                System.out.println(idTeam);
 //                                System.out.println(badgeTeam);
-                            }
-                            TextView shotsHome = findViewById(R.id.dShotsHome);
-                            TextView shotsAway = findViewById(R.id.dShotsAway);
-                            TextView goalsHome = findViewById(R.id.dGoalsHome);
-                            TextView goalsAway = findViewById(R.id.dGoalsAway);
+                                }
+                                TextView shotsHome = findViewById(R.id.dShotsHome);
+                                TextView shotsAway = findViewById(R.id.dShotsAway);
+                                TextView goalsHome = findViewById(R.id.dGoalsHome);
+                                TextView goalsAway = findViewById(R.id.dGoalsAway);
 
-                            shotsHome.setText(homeShots);
-                            shotsAway.setText(awayShots);
-                            for (int i = 0; i < homeGoalsList.length; i++) {
+                                shotsHome.setText(homeShots);
+                                shotsAway.setText(awayShots);
+                                for (int i = 0; i < homeGoalsList.length; i++) {
                                     goalsHome.append(homeGoalsList[i]);
                                     goalsHome.append("\n");
-                            }
+                                }
 
-                            for (int i = 0; i < awayGoalsList.length; i++) {
-                                goalsAway.append(awayGoalsList[i]);
-                                goalsAway.append("\n");
-                            }
+                                for (int i = 0; i < awayGoalsList.length; i++) {
+                                    goalsAway.append(awayGoalsList[i]);
+                                    goalsAway.append("\n");
+                                }
 //                            int size = teamHash.size();
 //                            System.out.println(size);
 //                            parseJSONMatch();
 
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                            Log.i("Match Detail", "failed");
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                                Log.i("Match Detail", "failed");
+                            }
                         }
+                    }, new Response.ErrorListener() {
+
+                @Override
+                public void onErrorResponse(VolleyError error) {
+                    error.printStackTrace();
+                }
+            });
+
+            requestQueue.add(request);
+        }
+
+        else {
+            try{
+                DataMatch data = db.getDataMatch(idMatch);
+                if(data != null) {
+                    JSONObject jsonObject = new JSONObject(data.getData());
+                    JSONArray jsonArray = jsonObject.getJSONArray("events");
+//                            System.out.println(jsonArray.get(0));
+//                            System.out.println(jsonArray.get(1));
+
+                    for (int i = 0; i < jsonArray.length(); i++) {
+                        JSONObject hit = jsonArray.getJSONObject(i);
+
+                        homeShots = hit.getString("intHomeShots");
+                        if (homeShots.equals("null")) {
+                            homeShots = "-";
+                        }
+                        awayShots = hit.getString("intAwayShots");
+                        if (awayShots.equals("null")) {
+                            awayShots = "-";
+                        }
+                        String homeGoalsRaw = hit.getString("strHomeGoalDetails");
+                        String homeGoalsRep = homeGoalsRaw.replace(":", " ");
+                        homeGoalsList = homeGoalsRep.split(";");
+                        String awayGoalsRaw = hit.getString("strAwayGoalDetails");
+                        String awayGoalsRep = awayGoalsRaw.replace(":", " ");
+                        awayGoalsList = awayGoalsRep.split(";");
+                        Log.i("Team", homeGoalsRep);
+                        Log.i("Team", homeGoalsList[0]);
+//                                System.out.println(idTeam);
+//                                System.out.println(badgeTeam);
                     }
-                }, new Response.ErrorListener() {
 
-            @Override
-            public void onErrorResponse(VolleyError error) {
-                error.printStackTrace();
+                    TextView shotsHome = findViewById(R.id.dShotsHome);
+                    TextView shotsAway = findViewById(R.id.dShotsAway);
+                    TextView goalsHome = findViewById(R.id.dGoalsHome);
+                    TextView goalsAway = findViewById(R.id.dGoalsAway);
+
+                    shotsHome.setText(homeShots);
+                    shotsAway.setText(awayShots);
+                    for (int i = 0; i < homeGoalsList.length; i++) {
+                        goalsHome.append(homeGoalsList[i]);
+                        goalsHome.append("\n");
+                    }
+
+                    for (int i = 0; i < awayGoalsList.length; i++) {
+                        goalsAway.append(awayGoalsList[i]);
+                        goalsAway.append("\n");
+                    }
+                }
             }
-        });
 
-        requestQueue.add(request);
+            catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+        }
+
     }
 
     public void onImageHomeClick(View v){
@@ -186,6 +260,19 @@ public class MatchDetail extends AppCompatActivity {
         teamIntent.putExtra(EXTRA_TEAM_IMAGE_D, awayImage);
 
         startActivity(teamIntent);
+    }
+
+
+    public boolean isConnected() {
+//        boolean connected = false;
+        ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        if(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+                connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
+            //we are connected to a network
+            return true;
+        }
+        else
+            return false;
     }
 
 //    public void OnItemClick(int position){

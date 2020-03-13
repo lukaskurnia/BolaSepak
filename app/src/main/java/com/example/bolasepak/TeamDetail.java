@@ -5,7 +5,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager.widget.ViewPager;
 
+import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageView;
@@ -64,8 +67,8 @@ public class TeamDetail extends AppCompatActivity{
         viewPager = (ViewPager) findViewById(R.id.view_pager);
         viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
 
-        viewPagerAdapter.AddFragment(FragmentNextMatch.fragmentInstance(idTeam), "Next Matches");
-        viewPagerAdapter.AddFragment(FragmentPastMatch.fragmentInstance(idTeam), "Past Matches");
+        viewPagerAdapter.AddFragment(FragmentNextMatch.fragmentInstance(idTeam, isConnected()), "Next Matches");
+        viewPagerAdapter.AddFragment(FragmentPastMatch.fragmentInstance(idTeam, isConnected()), "Past Matches");
         viewPager.setAdapter(viewPagerAdapter);
         tabLayout.setupWithViewPager(viewPager);
 
@@ -77,6 +80,18 @@ public class TeamDetail extends AppCompatActivity{
 //        teamHash = new HashMap<String, String>();
 //
 //        parseJSONTeam();
+    }
+
+    public boolean isConnected() {
+//        boolean connected = false;
+        ConnectivityManager connectivityManager = (ConnectivityManager)getSystemService(Context.CONNECTIVITY_SERVICE);
+        if(connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE).getState() == NetworkInfo.State.CONNECTED ||
+                connectivityManager.getNetworkInfo(ConnectivityManager.TYPE_WIFI).getState() == NetworkInfo.State.CONNECTED) {
+            //we are connected to a network
+            return true;
+        }
+        else
+            return false;
     }
 
 //    private void parseJSONMatch() {

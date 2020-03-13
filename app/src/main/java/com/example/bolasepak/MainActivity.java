@@ -139,6 +139,18 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
         db.closeDB();
     }
 
+//    @Override
+//    protected void onPause() {
+//        super.onPause();
+//        db.closeDB();
+//    }
+//
+//    @Override
+//    protected void onResume() {
+//        super.onResume();
+//        db.
+//    }
+
     private void parseJSONMatch() {
         String url = "https://www.thesportsdb.com/api/v1/json/1/eventspastleague.php?id=4328";
 
