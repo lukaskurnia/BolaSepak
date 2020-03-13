@@ -102,7 +102,7 @@ public class FragmentNextMatch extends Fragment implements MatchAdapter.OnItemCl
                         @Override
                         public void onResponse(JSONObject response) {
                             try {
-                                DataTeam data = new DataTeam(response.toString(),idTeam,"detail", "next");
+                                DataTeam data = new DataTeam(response.toString(),getArguments().getString("idTeam"),"detail", "next");
                                 db.createDataTeam(data);
                                 JSONArray jsonArray = response.getJSONArray("events");
                                 System.out.println(jsonArray.length());
@@ -152,7 +152,7 @@ public class FragmentNextMatch extends Fragment implements MatchAdapter.OnItemCl
         }
         else {
             try {
-                DataTeam data = db.getDataTeam(idTeam, "detail", "next");
+                DataTeam data = db.getDataTeam(getArguments().getString("idTeam"), "detail", "next");
                 if(data!= null) {
                     JSONObject jsonObject = new JSONObject(data.getData());
                     JSONArray jsonArray = jsonObject.getJSONArray("events");
@@ -204,7 +204,7 @@ public class FragmentNextMatch extends Fragment implements MatchAdapter.OnItemCl
 //                        System.out.println(resp);
 //                        System.out.println(JsonObject.stringify(response));
                             try {
-                                DataTeam data = new DataTeam(response.toString(), idTeam, "pic", "next");
+                                DataTeam data = new DataTeam(response.toString(), getArguments().getString("idTeam"), "pic", "next");
                                 db.createDataTeam(data);
                                 JSONArray jsonArray = response.getJSONArray("teams");
                                 System.out.println(jsonArray.get(0));
@@ -243,7 +243,7 @@ public class FragmentNextMatch extends Fragment implements MatchAdapter.OnItemCl
         }
         else {
             try{
-                DataTeam data = db.getDataTeam(idTeam, "pic", "next");
+                DataTeam data = db.getDataTeam(getArguments().getString("idTeam"), "pic", "next");
                 if(data != null) {
                     JSONObject jsonobject = new JSONObject(data.getData());
                     JSONArray jsonArray = jsonobject.getJSONArray("teams");

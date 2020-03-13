@@ -100,7 +100,7 @@ public class FragmentPastMatch extends Fragment implements MatchAdapter.OnItemCl
                         @Override
                         public void onResponse(JSONObject response) {
                             try {
-                                DataTeam data = new DataTeam(response.toString(), idTeam, "detail", "past");
+                                DataTeam data = new DataTeam(response.toString(), getArguments().getString("idTeam"), "detail", "past");
                                 db.createDataTeam(data);
                                 JSONArray jsonArray = response.getJSONArray("results");
                                 System.out.println(jsonArray.length());
@@ -150,7 +150,7 @@ public class FragmentPastMatch extends Fragment implements MatchAdapter.OnItemCl
         }
         else {
             try {
-                DataTeam data = db.getDataTeam(idTeam, "detail", "past");
+                DataTeam data = db.getDataTeam(getArguments().getString("idTeam"), "detail", "past");
                 if(data!= null) {
                     JSONObject jsonObject = new JSONObject(data.getData());
                     JSONArray jsonArray = jsonObject.getJSONArray("results");
@@ -201,7 +201,7 @@ public class FragmentPastMatch extends Fragment implements MatchAdapter.OnItemCl
 //                        System.out.println(resp);
 //                        System.out.println(JsonObject.stringify(response));
                             try {
-                                DataTeam data = new DataTeam(response.toString(), idTeam, "pic", "past");
+                                DataTeam data = new DataTeam(response.toString(), getArguments().getString("idTeam"), "pic", "past");
                                 db.createDataTeam(data);
                                 JSONArray jsonArray = response.getJSONArray("teams");
                                 System.out.println(jsonArray.get(0));
@@ -240,7 +240,7 @@ public class FragmentPastMatch extends Fragment implements MatchAdapter.OnItemCl
         }
         else {
             try {
-                DataTeam data = db.getDataTeam(idTeam, "pic", "past");
+                DataTeam data = db.getDataTeam(getArguments().getString("idTeam"), "pic", "past");
                 if(data != null) {
                     JSONObject jsonobject = new JSONObject(data.getData());
                     JSONArray jsonArray = jsonobject.getJSONArray("teams");
