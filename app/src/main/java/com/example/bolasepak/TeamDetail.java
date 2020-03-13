@@ -64,8 +64,8 @@ public class TeamDetail extends AppCompatActivity{
         viewPager = (ViewPager) findViewById(R.id.view_pager);
         viewPagerAdapter = new ViewPagerAdapter(getSupportFragmentManager());
 
-        viewPagerAdapter.AddFragment(new FragmentNextMatch(idTeam), "Next Matches");
-        viewPagerAdapter.AddFragment(new FragmentPastMatch(idTeam), "Past Matches");
+        viewPagerAdapter.AddFragment(FragmentNextMatch.fragmentInstance(idTeam), "Next Matches");
+        viewPagerAdapter.AddFragment(FragmentPastMatch.fragmentInstance(idTeam), "Past Matches");
         viewPager.setAdapter(viewPagerAdapter);
         tabLayout.setupWithViewPager(viewPager);
 

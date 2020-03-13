@@ -52,8 +52,15 @@ public class FragmentNextMatch extends Fragment implements MatchAdapter.OnItemCl
 
     View v;
 
-    public FragmentNextMatch(String idTeam){
-        this.idTeam = idTeam;
+    public FragmentNextMatch(){
+
+    }
+    public static FragmentNextMatch fragmentInstance (String idTeam){
+        Bundle args = new Bundle();
+        args.putString("idTeam", idTeam);
+        FragmentNextMatch f = new FragmentNextMatch();
+        f.setArguments(args);
+        return f;
     }
 
     @Nullable
@@ -70,8 +77,9 @@ public class FragmentNextMatch extends Fragment implements MatchAdapter.OnItemCl
 
         return v;
     }
+
     private void parseJSONMatch() {
-        String url = "https://www.thesportsdb.com/api/v1/json/1/eventsnext.php?id=" + idTeam;
+        String url = "https://www.thesportsdb.com/api/v1/json/1/eventsnext.php?id=" + getArguments().getString("idTeam");
 
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
                 new Response.Listener<JSONObject>() {

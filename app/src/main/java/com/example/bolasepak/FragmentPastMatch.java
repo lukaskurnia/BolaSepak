@@ -52,8 +52,15 @@ public class FragmentPastMatch extends Fragment implements MatchAdapter.OnItemCl
 
     View v;
 
-    public FragmentPastMatch(String idTeam){
-        this.idTeam = idTeam;
+    public FragmentPastMatch(){
+    }
+
+    public static FragmentPastMatch fragmentInstance (String idTeam){
+        Bundle args = new Bundle();
+        args.putString("idTeam", idTeam);
+        FragmentPastMatch f = new FragmentPastMatch();
+        f.setArguments(args);
+        return f;
     }
 
     @Nullable
@@ -66,7 +73,7 @@ public class FragmentPastMatch extends Fragment implements MatchAdapter.OnItemCl
         matchList = new ArrayList<>();
         requestQueue = Volley.newRequestQueue( getActivity().getApplicationContext());
         teamHash = new HashMap<String, String>();
-        String id = this.idTeam;
+        String id = getArguments().getString("idTeam");
         parseJSONTeam(id);
 
         return v;
