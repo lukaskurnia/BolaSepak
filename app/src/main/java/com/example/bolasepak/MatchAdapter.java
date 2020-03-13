@@ -19,6 +19,17 @@ public class MatchAdapter extends RecyclerView.Adapter <MatchAdapter.MatchViewHo
     private Context context;
     private ArrayList<MatchItem> MatchList;
 
+    private OnItemClickListener mListener;
+
+
+    public interface OnItemClickListener{
+        void onItemClick(int position);
+    }
+
+    public void setOnItemClickListener(OnItemClickListener listener) {
+        mListener = listener;
+    }
+
     public MatchAdapter(Context context, ArrayList<MatchItem> MatchList){
         this.context = context;
         this.MatchList = MatchList;
@@ -80,6 +91,18 @@ public class MatchAdapter extends RecyclerView.Adapter <MatchAdapter.MatchViewHo
             vs = itemView.findViewById(R.id.vs);
             imageHome = itemView.findViewById(R.id.imageHome);
             imageAway = itemView.findViewById(R.id.imageAway);
+
+            itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (mListener != null) {
+                        int position = getAdapterPosition();
+                        if (position != RecyclerView.NO_POSITION) {
+                            mListener.onItemClick(position);
+                        }
+                    }
+                }
+            });
         }
 
     }
