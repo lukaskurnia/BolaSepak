@@ -79,6 +79,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
             db.recreateDataHome();
         }
 
+
         recyclerView = findViewById(R.id.recycler_view);
         recyclerView.setHasFixedSize(true);
 

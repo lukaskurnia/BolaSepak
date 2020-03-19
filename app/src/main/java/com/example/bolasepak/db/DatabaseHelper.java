@@ -13,6 +13,7 @@ import androidx.annotation.Nullable;
 import com.example.bolasepak.db.model.DataHome;
 import com.example.bolasepak.db.model.DataMatch;
 import com.example.bolasepak.db.model.DataTeam;
+import com.example.bolasepak.db.model.Subscribe;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
@@ -23,6 +24,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String TABLE_DATAHOME = "data_home";
     private static final String TABLE_DATAMATCH = "data_match";
     private static final String TABLE_DATATEAM = "data_team";
+    private static final String TABLE_SUBSCRIBE = "subscribe";
 
     private static final String KEY_DATAHOME_DATA = "data";
     private static final String KEY_DATAHOME_TYPE = "type";
@@ -34,6 +36,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String KEY_DATATEAM_TYPE = "type";;
     private static final String KEY_DATATEAM_TEAMID = "team_id";
     private static final String KEY_DATATEAM_STATUS = "status";
+
+    private static final String KEY_SUBSCRIBE_TEAMID = "team_id";
 
     private static final String KEY_ID = "id";
 
@@ -51,6 +55,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                     KEY_DATATEAM_TEAMID + " TEXT NOT NULL, " +KEY_DATATEAM_TYPE + " TEXT NOT NULL, " +
                     KEY_DATATEAM_DATA+ " TEXT NOT NULL" + ")";
 
+    private static final String CREATE_TABLE_SUBSCRIBE =
+            "CREATE TABLE IF NOT EXISTS " + TABLE_SUBSCRIBE + " (" + KEY_ID + " INTEGER PRIMARY KEY," +
+                    KEY_SUBSCRIBE_TEAMID + " TEXT NOT NULL" + ")";
+
     /***
      * All utility
      *
@@ -64,6 +72,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         db.execSQL(CREATE_TABLE_DATAHOME);
         db.execSQL(CREATE_TABLE_DATAMATCH);
         db.execSQL(CREATE_TABLE_DATATEAM);
+        db.execSQL(CREATE_TABLE_SUBSCRIBE);
     }
 
     @Override
@@ -255,4 +264,55 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             return null;
         }
     }
+
+    /***
+     *
+     * Bagian CRUD Database untuk SUBSCRIBE
+     */
+
+
+    //create or insert
+    public long createSubscribe(Subscribe subscribe) {
+        SQLiteDatabase db = this.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(KEY_SUBSCRIBE_TEAMID, subscribe.getTeamId());
+
+        long subscribe_id = db.insert(TABLE_SUBSCRIBE, null, values);
+
+        return subscribe_id;
+    }
+
+    //read or select
+    public Subscribe getSubscribe(String team_id) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String selectQuery = "SELECT * FROM " + TABLE_SUBSCRIBE + " WHERE "
+                + KEY_SUBSCRIBE_TEAMID + " = " + "'" + team_id +"'";
+
+        Log.e(LOG, selectQuery);
+
+        Cursor c = db.rawQuery(selectQuery,null);
+
+        if(c != null) {
+            c.moveToFirst();
+        }
+
+        try{
+            Subscribe dh = new Subscribe();
+            dh.setId(c.getInt(c.getColumnIndex(KEY_ID)));
+            dh.setTeamId(c.getString(c.getColumnIndex(KEY_SUBSCRIBE_TEAMID)));
+
+            return dh;
+        } catch (Exception e){
+            return null;
+        }
+    }
+
+    //delete
+    public void deleteSubscribe(String datasubscribe_teamid) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        db.delete(TABLE_SUBSCRIBE, KEY_DATATEAM_TEAMID + " = ?",
+                new String[] {String.valueOf(datasubscribe_teamid)});
+    }
+
 }
