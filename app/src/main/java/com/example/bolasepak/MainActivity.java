@@ -152,7 +152,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
 //    }
 
     private void parseJSONMatch() {
-        String url = "https://www.thesportsdb.com/api/v1/json/1/eventspastleague.php?id=4328";
+        String url = "http://134.209.97.218:5050//api/v1/json/1/eventspastleague.php?id=4328";
 
         if(isConnected()) {
             JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
@@ -255,7 +255,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     
 
     private void parseJSONTeam() {
-        String url = "https://www.thesportsdb.com/api/v1/json/1/search_all_teams.php?l=English%20Premier%20League";
+        String url = "http://134.209.97.218:5050/api/v1/json/1/search_all_teams.php?l=English%20Premier%20League";
 
         if(isConnected()) {
             JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
@@ -382,7 +382,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public void parseJSONSearch(final String name){
-        String url = "https://www.thesportsdb.com/api/v1/json/1/search_all_teams.php?l=English%20Premier%20League";
+        String url = "http://134.209.97.218:5050/api/v1/json/1/search_all_teams.php?l=English%20Premier%20League";
 
         if(isConnected()) {
             JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
@@ -460,7 +460,7 @@ public class MainActivity extends AppCompatActivity implements SensorEventListen
     }
 
     public void parseJSONQuery(final String query){
-        String url = "https://www.thesportsdb.com/api/v1/json/1/eventsseason.php?id=4328&s=1920";
+        String url = "http://134.209.97.218:5050/api/v1/json/1/eventsseason.php?id=4328&s=1920";
         final String toLowerQuery = query.toLowerCase();
 
         if(isConnected()) {

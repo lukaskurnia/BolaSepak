@@ -52,11 +52,25 @@ public class FragmentNextMatch extends Fragment implements MatchAdapter.OnItemCl
     private RecyclerView recyclerView;
     private MatchAdapter matchAdapter;
     private HashMap<String, String> teamHash;
+    private HashMap<String, String> stadiumHash;
     private ArrayList<MatchItem> matchList;
     private RequestQueue requestQueue;
 
     private String idTeam;
     private boolean status;
+    private String mainWeather;
+    private String descWeather;
+//    private String idMatch;
+//    private String idHome;
+//    private String idAway;
+//    private String date;
+//    private String homeTeam;
+//    private String awayTeam;
+//    private String homeScore;
+//    private String awayScore;
+//    private String homeImage;
+//    private String awayImage;
+
 
     DatabaseHelper db;
 
@@ -86,6 +100,7 @@ public class FragmentNextMatch extends Fragment implements MatchAdapter.OnItemCl
         matchList = new ArrayList<>();
         requestQueue = Volley.newRequestQueue( getActivity().getApplicationContext());
         teamHash = new HashMap<String, String>();
+        stadiumHash = new HashMap<String, String>();
         parseJSONTeam();
 
         db.closeDB();
@@ -94,7 +109,7 @@ public class FragmentNextMatch extends Fragment implements MatchAdapter.OnItemCl
     }
 
     private void parseJSONMatch() {
-        String url = "https://www.thesportsdb.com/api/v1/json/1/eventsnext.php?id=" + getArguments().getString("idTeam");
+        final String url = "http://134.209.97.218:5050/api/v1/json/1/eventsnext.php?id=" + getArguments().getString("idTeam");
 
         if(getArguments().getBoolean("status")) {
             JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
@@ -126,10 +141,16 @@ public class FragmentNextMatch extends Fragment implements MatchAdapter.OnItemCl
                                     }
                                     String homeImage = teamHash.get(idHome);
                                     String awayImage = teamHash.get(idAway);
+                                    String homeCity = stadiumHash.get(idHome);
 
+                                    parseJSONWeather(idMatch, idHome, idAway, date, homeTeam, awayTeam, homeScore, awayScore, homeImage, awayImage, homeCity);
+
+
+                                    //requestQueue.add(request);
                                     Log.i("match", "succeded");
-
-                                    matchList.add(new MatchItem(idMatch, idHome, idAway, date, homeTeam, awayTeam, homeScore, awayScore, homeImage, awayImage));
+                                    //Log.i("outWeather1", mainWeather);
+                                    //Log.i("outWeather2", descWeather);
+                                    //matchList.add(new MatchItem(idMatch, idHome, idAway, date, homeTeam, awayTeam, homeScore, awayScore, homeImage, awayImage, mainWeather, descWeather));
                                 }
 
                                 matchAdapter = new MatchAdapter(getActivity().getApplicationContext(), matchList);
@@ -193,7 +214,7 @@ public class FragmentNextMatch extends Fragment implements MatchAdapter.OnItemCl
     }
 
     private void parseJSONTeam() {
-        String url = "https://www.thesportsdb.com/api/v1/json/1/search_all_teams.php?l=English%20Premier%20League";
+        String url = "http://134.209.97.218:5050/api/v1/json/1/search_all_teams.php?l=English%20Premier%20League";
 
         if(getArguments().getBoolean("status")) {
             JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
@@ -215,12 +236,20 @@ public class FragmentNextMatch extends Fragment implements MatchAdapter.OnItemCl
 
                                     String idTeam = hit.getString("idTeam");
                                     String badgeTeam = hit.getString("strTeamBadge");
+                                    String[] stadiumLocation = hit.getString("strStadiumLocation").split(", ");
+                                    String stadiumCity = stadiumLocation[stadiumLocation.length - 1];
+//                                    if ( stadiumLocation.length > 1 ){
+//                                        stadiumCity = stadiumLocation[1];
+//                                    }
+//                                    else {
+//                                        stadiumCity = stadiumLocation[0];
+//                                    }
                                     Log.i("Team", idTeam);
-                                    Log.i("Team", badgeTeam);
-//                                System.out.println(idTeam);
-//                                System.out.println(badgeTeam);
+                                    Log.i("Team badge", badgeTeam);
+                                    Log.i("Team City", stadiumCity);
 
                                     teamHash.put(idTeam, badgeTeam);
+                                    stadiumHash.put(idTeam, stadiumCity);
                                 }
                                 int size = teamHash.size();
                                 System.out.println(size);
@@ -272,6 +301,47 @@ public class FragmentNextMatch extends Fragment implements MatchAdapter.OnItemCl
         }
     }
 
+    private void parseJSONWeather(final String idMatch, final String idHome, final String idAway, final String date, final String homeTeam, final String awayTeam, final String homeScore, final String awayScore, final String homeImage, final String awayImage, final String homeCity){
+        String urlCity = "https://api.openweathermap.org/data/2.5/weather?q=" + homeCity + "&appid=127eb580ce79e4f5624152aae7b26fd7";
+        Log.i("urlCity", urlCity);
+        JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, urlCity, null,
+                new Response.Listener<JSONObject>() {
+                    @Override
+                    public void onResponse(JSONObject response) {
+                        Log.i("test2", "test try 1");
+                        try {
+                            JSONArray jsonArray = response.getJSONArray("weather");
+                            System.out.println(jsonArray.length());
+                            Log.i("test1", "test try 1");
+                            for (int i = 0; i < jsonArray.length(); i++) {
+                                JSONObject hit = jsonArray.getJSONObject(i);
+                                Log.i("hit", "mashook");
+
+                                mainWeather = hit.getString("main");
+                                descWeather = hit.getString("description");
+                                Log.i("main weather", mainWeather);
+                                Log.i("desc weather", descWeather);
+                                matchList.add(new MatchItem(idMatch, idHome, idAway, date, homeTeam, awayTeam, homeScore, awayScore, homeImage, awayImage, mainWeather, homeCity));
+                            }
+                            matchAdapter = new MatchAdapter(getActivity().getApplicationContext(), matchList);
+                            recyclerView.setAdapter(matchAdapter);
+                            matchAdapter.setOnItemClickListener(FragmentNextMatch.this);
+
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                            Log.i("errweather1", "failed");
+                        }
+                    }
+                }, new Response.ErrorListener() {
+            @Override
+            public void onErrorResponse(VolleyError error) {
+                error.printStackTrace();
+                Log.i("errweather2", "failed");
+            }
+        });
+        requestQueue.add(request);
+    }
+
     @Override
     public void onItemClick(int position) {
         Intent detailIntent = new Intent(this.getActivity(), MatchDetail.class);
@@ -290,18 +360,4 @@ public class FragmentNextMatch extends Fragment implements MatchAdapter.OnItemCl
 
         startActivity(detailIntent);
     }
-
-
-//    @Override
-//    public void onCreate(Bundle savedInstanceState){
-//        super.onCreate(savedInstanceState);
-//        setContentView(R.layout.fragment_next_match);
-//
-//        recyclerView = view.findViewById(R.id.recycler_view_next_match);
-//        recyclerView.setHasFixedSize(true);
-//        recyclerView.setLayoutManager(new LinearLayoutManager(this));
-//        matchList = new ArrayList<>();
-//        requestQueue = Volley.newRequestQueue(this);
-//        teamHash = new HashMap<String, String>();
-//    }
 }

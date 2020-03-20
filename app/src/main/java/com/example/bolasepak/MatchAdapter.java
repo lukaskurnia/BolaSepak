@@ -1,6 +1,7 @@
 package com.example.bolasepak;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,6 +45,8 @@ public class MatchAdapter extends RecyclerView.Adapter <MatchAdapter.MatchViewHo
     @Override
     public void onBindViewHolder(MatchViewHolder holder, int position) {
         MatchItem currentItem = this.MatchList.get(position);
+        Integer pos = position;
+        Log.i("Position", pos.toString());
 
         String idMatch = currentItem.getIdMatch();
         String idHome = currentItem.getIdHome();
@@ -55,6 +58,8 @@ public class MatchAdapter extends RecyclerView.Adapter <MatchAdapter.MatchViewHo
         String awayScore = currentItem.getAwayScore();
         String homeImage = currentItem.getHomeImage();
         String awayImage = currentItem.getAwayImage();
+        String mainWeather = currentItem.getMainWeather();
+        String descWeather = currentItem.getDescWeather();
 
         holder.date.setText(date);
         holder.textHome.setText(homeTeam);
@@ -62,6 +67,8 @@ public class MatchAdapter extends RecyclerView.Adapter <MatchAdapter.MatchViewHo
         holder.scoreHome.setText(homeScore);
         holder.scoreAway.setText(awayScore);
         holder.vs.setText("VS");
+        holder.mainWeather.setText(mainWeather);
+        holder.descWeather.setText(descWeather);
         Picasso.get().load(homeImage).fit().centerInside().into(holder.imageHome);
         Picasso.get().load(awayImage).fit().centerInside().into(holder.imageAway);
     }
@@ -81,6 +88,9 @@ public class MatchAdapter extends RecyclerView.Adapter <MatchAdapter.MatchViewHo
         public TextView vs;
         public ImageView imageHome;
         public ImageView imageAway;
+        public TextView mainWeather;
+        public TextView descWeather;
+
         public MatchViewHolder(View itemView){
             super(itemView);
             date = itemView.findViewById(R.id.date);
@@ -91,6 +101,8 @@ public class MatchAdapter extends RecyclerView.Adapter <MatchAdapter.MatchViewHo
             vs = itemView.findViewById(R.id.vs);
             imageHome = itemView.findViewById(R.id.imageHome);
             imageAway = itemView.findViewById(R.id.imageAway);
+            mainWeather = itemView.findViewById(R.id.textWeather);
+            descWeather = itemView.findViewById(R.id.textWeatherDesc);
 
             itemView.setOnClickListener(new View.OnClickListener() {
                 @Override

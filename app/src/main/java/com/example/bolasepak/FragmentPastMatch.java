@@ -89,7 +89,7 @@ public class FragmentPastMatch extends Fragment implements MatchAdapter.OnItemCl
     }
     private void parseJSONMatch(String id) {
         Log.i("yuhu", id);
-        String url = "https://www.thesportsdb.com/api/v1/json/1/eventslast.php?id=" + id;
+        String url = "http://134.209.97.218:5050/api/v1/json/1/eventslast.php?id=" + id;
         Log.i("yuhuuu", url);
 
         if(getArguments().getBoolean("status")) {
@@ -190,7 +190,7 @@ public class FragmentPastMatch extends Fragment implements MatchAdapter.OnItemCl
     }
 
     private void parseJSONTeam(final String id) {
-        String url = "https://www.thesportsdb.com/api/v1/json/1/search_all_teams.php?l=English%20Premier%20League";
+        String url = "http://134.209.97.218:5050/api/v1/json/1/search_all_teams.php?l=English%20Premier%20League";
 
         if(getArguments().getBoolean("status")) {
             JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,
