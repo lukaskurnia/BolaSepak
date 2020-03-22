@@ -7,10 +7,13 @@ import androidx.viewpager.widget.ViewPager;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
@@ -20,6 +23,8 @@ import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.bolasepak.db.DatabaseHelper;
+import com.example.bolasepak.db.model.Subscribe;
 import com.google.android.material.tabs.TabLayout;
 import com.squareup.picasso.Picasso;
 
@@ -39,6 +44,9 @@ public class TeamDetail extends AppCompatActivity{
     private TabLayout tabLayout;
     private ViewPager viewPager;
     private ViewPagerAdapter viewPagerAdapter;
+
+    DatabaseHelper db;
+    int but;
 //    private RecyclerView recyclerView;
 //    private MatchAdapter matchAdapter;
 //    private HashMap<String, String> teamHash;
@@ -51,14 +59,47 @@ public class TeamDetail extends AppCompatActivity{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_team_detail);
 
-        Intent intent = getIntent();
+        db = new DatabaseHelper(getApplicationContext());
 
-        String idTeam = intent.getStringExtra(EXTRA_TEAM_ID_D);
+        Intent intent = getIntent();
+        but = 0;
+        final String idTeam = intent.getStringExtra(EXTRA_TEAM_ID_D);
         String teamName = intent.getStringExtra(EXTRA_TEAM_NAME_D);
         String teamImage = intent.getStringExtra(EXTRA_TEAM_IMAGE_D);
 
+        final Subscribe mySubscribe = db.getSubscribe(idTeam);
+
         TextView tvTeamName = findViewById(R.id.teamName);
         ImageView tvTeamImage = findViewById(R.id.teamImage);
+        final Button button = findViewById(R.id.subscribe);
+
+        if(mySubscribe != null) {
+            button.setText("Subscribed");
+            button.setBackgroundColor(Color.rgb(223,223,223));
+            button.setTextColor(Color.rgb(159,159,159));
+            but = 1;
+        }
+
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if(but == 1) {
+                    db.deleteSubscribe(idTeam);
+                    button.setText("Subscribe");
+                    button.setBackgroundColor(Color.rgb(207,0,0));
+                    button.setTextColor(Color.rgb(255,255,255));
+                    but = 0;
+                }
+                else{
+                    Subscribe subscribe = new Subscribe(idTeam);
+                    db.createSubscribe(subscribe);
+                    button.setText("Subscribed");
+                    button.setBackgroundColor(Color.rgb(223,223,223));
+                    button.setTextColor(Color.rgb(159,159,159));
+                    but = 1;
+                }
+            }
+        });
 
         tvTeamName.setText(teamName);
         Picasso.get().load(teamImage).fit().centerInside().into(tvTeamImage);

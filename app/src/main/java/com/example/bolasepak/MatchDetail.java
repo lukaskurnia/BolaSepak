@@ -111,7 +111,7 @@ public class MatchDetail extends AppCompatActivity {
     }
 
     private void parseJSONMatchDetail(final String idMatch) {
-        String url = "https://www.thesportsdb.com/api/v1/json/1/lookupevent.php?id=" + idMatch;
+        String url = "http://134.209.97.218:5050/api/v1/json/1/lookupevent.php?id=" + idMatch;
 
         if(isConnected()) {
             JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null,

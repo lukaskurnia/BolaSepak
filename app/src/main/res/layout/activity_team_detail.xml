@@ -50,9 +50,12 @@
             android:layout_height="35dp"
             android:layout_marginStart="16dp"
             android:layout_marginTop="8dp"
-            android:text="Subscribe"
+            android:background="#CF0000"
+            android:text="@string/subscribe_text"
             android:textAlignment="center"
-            android:textSize="12sp"
+            android:textColor="#FFFFFF"
+            android:textSize="14sp"
+            android:textStyle="bold"
             app:layout_constraintStart_toEndOf="@+id/teamImage"
             app:layout_constraintTop_toBottomOf="@+id/teamName" />
     </androidx.constraintlayout.widget.ConstraintLayout>

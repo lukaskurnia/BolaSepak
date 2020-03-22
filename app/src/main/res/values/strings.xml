@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">BolaSepak</string>
-
-    <!-- TODO: Remove or change this placeholder text -->
-    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="step_string">1000 steps today</string>
+    <string name="subscribe_text">Subscribe</string>
 </resources>

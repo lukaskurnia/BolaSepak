@@ -11,6 +11,8 @@ public class MatchItem {
     private String awayScore;
     private String homeImage;
     private String awayImage;
+    private String mainWeather;
+    private String descWeather;
 
     public MatchItem(String idMatch, String idHome, String idAway, String date, String homeTeam, String awayTeam, String homeScore, String awayScore, String homeImage, String awayImage){
         this.idMatch = idMatch;
@@ -23,6 +25,23 @@ public class MatchItem {
         this.awayScore = awayScore;
         this.homeImage = homeImage;
         this.awayImage = awayImage;
+        this.mainWeather = "";
+        this.descWeather = "";
+    }
+
+    public MatchItem(String idMatch, String idHome, String idAway, String date, String homeTeam, String awayTeam, String homeScore, String awayScore, String homeImage, String awayImage, String mainWeather, String descWeather){
+        this.idMatch = idMatch;
+        this.idHome = idHome;
+        this.idAway = idAway;
+        this.date = date;
+        this.homeTeam = homeTeam;
+        this.awayTeam = awayTeam;
+        this.homeScore = homeScore;
+        this.awayScore = awayScore;
+        this.homeImage = homeImage;
+        this.awayImage = awayImage;
+        this.mainWeather = mainWeather;
+        this.descWeather = descWeather;
     }
 
     public String getIdMatch(){
@@ -63,6 +82,12 @@ public class MatchItem {
 
     public String getAwayImage(){
         return this.awayImage;
+    }
+
+    public String getMainWeather(){ return this.mainWeather; }
+
+    public String getDescWeather(){
+        return this.descWeather;
     }
 
 }
